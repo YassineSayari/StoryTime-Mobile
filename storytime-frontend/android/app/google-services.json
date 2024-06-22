@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "82081837207",
+    "project_id": "story-time-f39d7",
+    "storage_bucket": "story-time-f39d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:82081837207:android:9dda6b3d277c2a99bcb9d2",
+        "android_client_info": {
+          "package_name": "com.example.storytime"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRjcOG-UtA5pPXXMqm1zz6mtLqU3IXlaM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
