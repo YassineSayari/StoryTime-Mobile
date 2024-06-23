@@ -1,23 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:storytime/homePage.dart';
+import 'package:storytime/profile/profile_screen.dart';
 import 'languages/app_localizations.dart';
 import 'authentication/login.dart';
 import 'languages/language_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: 'AIzaSyDRjcOG-UtA5pPXXMqm1zz6mtLqU3IXlaM',
-      appId: '1:82081837207:android:9dda6b3d277c2a99bcb9d2',
-      messagingSenderId: '82081837207',
-      projectId: 'story-time-f39d7',
-    ),
-  );
-
   runApp(
     MultiProvider(
       providers: [
@@ -29,8 +21,58 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final PageController controller = PageController(initialPage: 0);
+late Widget current_page = Container();
+
+
+  @override
+  void initState() {
+    super.initState();
+    initUser();
+  }
+
+  Future<void> initUser() async {
+  final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+  var id = sharedPrefs.getString('userId');
+  var role = sharedPrefs.getString('userRole');
+
+  print('Role: $role, ID: $id');
+
+  if (id != null) {
+    switch (role) {
+      case 'Admin':
+        print('redirecting to admin page');
+        setState(() {
+           current_page = homePage(controller: controller,);
+        });
+        break;
+      case 'User':
+        print('redirecting to user page');
+ setState(() {
+           current_page = homePage(controller: controller,);
+        });
+        break;        
+      default:
+        print('Unknown role, redirecting to sign in');
+        setState(() {
+           current_page = Login(controller: controller,);
+        });
+        break;
+    }
+  } else {
+    print('redirecting to sign in');
+    setState(() {
+           current_page = Login(controller: controller,);
+        });
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +90,12 @@ class MyApp extends StatelessWidget {
                 return MaterialApp(
                   debugShowCheckedModeBanner: false,
                   title: appLocalizationDelegate.appTitle,
-                 // home: homePage(controller: controller, userEmail: "userEmail"),
-                  home: Login(
-                    controller: controller,
-                    appLocalizationDelegate: appLocalizationDelegate,
-                  ),
+                  home: current_page,
+                   routes:{
+                    '/login': (context)=>Login(controller: controller),
+                    '/home':(context)=> homePage(controller: controller),
+                    '/profile':(context) =>const Profile(),
+                  },
                   locale: appLocale,
                   localizationsDelegates: [
                     AppLocalizations.delegate,
@@ -86,5 +129,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 

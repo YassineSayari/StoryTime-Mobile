@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'languages/app_localizations.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
@@ -15,31 +14,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
   Future sendPasswordReset() async
   {
-    try
-        {
-          await FirebaseAuth.instance.sendPasswordResetEmail(email:_emailController.text.trim());
-          showDialog(
-              context: context,
-              builder: (context)
-              {
-                return AlertDialog(
-                  content: Text("Reset link sent"),
-                );
-              }
-          );
-        }on FirebaseAuthException catch(e)
-         {
-          print (e);
-          showDialog(
-              context: context,
-              builder: (context)
-              {
-                return AlertDialog(
-                  content: Text(e.message.toString()),
-                );
-              }
-          );
-         }
+
   }
 
   @override

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:storytime/services/shared_preferences.dart';
 
 import '../const.dart';
 
@@ -9,6 +10,7 @@ import '../const.dart';
 class AuthService {
 
   final String apiUrl = '$baseUrl/api/v1/users';
+   SharedPrefs shared_prefs = SharedPrefs();
 
   //login
   Future<Map<String, dynamic>> login(String email, String password) async {
@@ -89,7 +91,7 @@ Future<void> UploadImageUser(XFile? pickedFile, Map<String, dynamic> userData) a
 
 
   logout() {
-   // shared_prefs.clearPrefs();
+    shared_prefs.clearPrefs();
   }
 
 }

@@ -11,6 +11,8 @@ import 'package:http/http.dart' as http;
 import 'package:storytime/components/comment_button.dart';
 import 'package:storytime/components/like_button.dart';
 import 'package:storytime/languages/readsharedstory.dart';
+import 'package:storytime/profile/profile_screen.dart';
+import 'package:storytime/services/authentication_service.dart';
 import 'package:storytime/sharedstories.dart';
 import 'package:storytime/theme.dart';
 import 'languages/app_localizations.dart';
@@ -18,12 +20,11 @@ import 'languages/language_provider.dart';
 
 import 'storyPage.dart';
 import 'savedStories.dart';
-import 'profile/profil.dart';
 
 class homePage extends StatefulWidget {
-  const homePage({Key? key, required this.controller, required this.userEmail}) : super(key: key);
+  const homePage({Key? key, required this.controller, this.userEmail}) : super(key: key);
   final PageController controller;
-  final String userEmail;
+  final String? userEmail;
 
 
   @override
@@ -164,7 +165,7 @@ class homePageState extends State<homePage> {
           generatedStory = storyContent.toString(); // Convert storyContent to string
         });
 
-        saveStory(topic, generatedStory, widget.userEmail);
+        saveStory(topic, generatedStory, widget.userEmail!);
 
         final unsplashResponse = await http.get(
           Uri.parse('$unsplashEndpoint?query=$topic as a child friendly image'),
@@ -301,6 +302,13 @@ class homePageState extends State<homePage> {
       return 0;
     }
   }
+  
+  Future<void> handleLogout() async{
+    AuthService authService=AuthService();
+    print("loggin out");
+    Navigator.of(context).pushReplacementNamed('/login');
+    authService.logout();
+      }
 
 
 Future<void> getUserImageUrl() async {
@@ -628,6 +636,28 @@ Widget build(BuildContext context) {
             ),
           ),
         ),
+                SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: ElevatedButton(
+              onPressed: () {
+                  handleLogout();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF9F7BFF),
+              ),
+              child: Text(
+                "logout",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 30,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     ),
   
@@ -676,7 +706,7 @@ Widget build(BuildContext context) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Profile(userEmail: widget.userEmail),
+                  builder: (context) => Profile(),
                 ),
               );
 
@@ -686,7 +716,7 @@ Widget build(BuildContext context) {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      SavedStoriesPage(userEmail: widget.userEmail),
+                      SavedStoriesPage(userEmail: widget.userEmail!),
                 ),
               );
               break;
@@ -715,321 +745,3 @@ Widget build(BuildContext context) {
     );
   }
 }
-
-      // appBar: AppBar(
-      //   automaticallyImplyLeading: false,
-      //   title: Text(
-      //     'Story Time',
-      //     style: TextStyle(fontSize: 30),
-      //   ),
-      //   centerTitle: false,
-      // ),
-      // body: ListView(
-      //   padding: EdgeInsets.all(16.0),
-      //   children: [
-      //     SizedBox(height: 30),
-      //     TextFormField(
-      //       controller: topic,
-      //       decoration: InputDecoration(
-      //         labelText: AppLocalizations.of(context).translate(
-      //             'story_prompt') ??
-      //             'Enter Your Story Topic',
-      //         labelStyle: TextStyle(
-      //           color: Colors.black,
-      //           fontSize: 15,
-      //           fontFamily: 'Poppins',
-      //           fontWeight: FontWeight.w600,
-      //         ),
-      //         enabledBorder: OutlineInputBorder(
-      //           borderRadius: BorderRadius.all(Radius.circular(10)),
-      //           borderSide: BorderSide(
-      //             width: 3,
-      //             color: Colors.black45,
-      //           ),
-      //         ),
-      //         focusedBorder: OutlineInputBorder(
-      //           borderRadius: BorderRadius.all(Radius.circular(10)),
-      //           borderSide: BorderSide(
-      //             width: 3,
-      //             color: Colors.black,
-      //           ),
-      //         ),
-      //       ),
-      //       maxLines: 5,
-      //       validator: (value) {
-      //         if (value == null || value.isEmpty) {
-      //           return 'Please enter a story topic';
-      //         }
-      //         return null;
-      //       },
-      //     ),
-      //     SizedBox(
-      //       height: 15,
-      //     ),
-      //     SizedBox(
-      //       width: 300,
-      //       height: 55,
-      //       child: ElevatedButton(
-      //         onPressed: () {
-      //           print("button pressed");
-      //           generateStory(topic.text);
-      //         },
-      //         style: ElevatedButton.styleFrom(
-      //           backgroundColor: const Color(0xFF9F7BFF),
-      //         ),
-      //         child: Text(
-      //           AppLocalizations.of(context).translate(
-      //               'generate_story_button') ??
-      //               'Generate Story',
-      //           style: TextStyle(
-      //             color: Colors.white,
-      //             fontSize: 30,
-      //             fontFamily: 'Poppins',
-      //             fontWeight: FontWeight.w500,
-      //           ),
-      //         ),
-      //       ),
-      //     ),
-      //     SizedBox(height: 20),
-      //     listeDesImages(),
-      //     SizedBox(height:35),
-      //     Center(
-      //       child: Text("Stories around the world ",
-      //         textAlign: TextAlign.center,
-      //       style: TextStyle(
-      //           fontSize: 35,
-      //           color: Colors.blueAccent,
-      //           fontWeight: FontWeight.bold
-      //       ),
-      //       ),
-      //     ),
-      //     FutureBuilder<List<Map<String, dynamic>>>(
-      //       future: getSharedStories(),
-      //       builder: (context, snapshot) {
-      //         if (snapshot.connectionState == ConnectionState.waiting) {
-      //           return Center(child: CircularProgressIndicator());
-      //         } else if (snapshot.hasError) {
-      //           return Text('Error: ${snapshot.error}');
-      //         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-      //           return Text('No shared stories found.');
-      //         } else {
-
-
-      //           return IntrinsicHeight(
-      //             child: Column(
-      //             crossAxisAlignment: CrossAxisAlignment.start,
-      //             children: [
-      //               for (Map<String, dynamic> storyData in snapshot.data!)
-      //                 Column(
-      //                   children: [
-      //                     GestureDetector(
-      //                     onTap: () {
-      //             Navigator.push(
-      //               context,
-      //               MaterialPageRoute(
-      //                 builder: (context) => readSharedStory(
-      //                   topic: storyData['title'], // Replace with your actual topic data
-      //                   story: storyData['full_story'],
-      //                   storyId: storyData['id'],
-      //                   // Replace with your actual full story data
-      //                 ),
-      //               ),
-      //             );
-      //           },
-      //                       child: Animate(
-      //                         effects: [FadeEffect(duration: 1200.ms), ShimmerEffect()],
-      //                         child: Container(
-      //                           decoration: BoxDecoration(
-      //                             shape: BoxShape.rectangle,
-      //                             color: Color(0xff8191da),
-      //                             borderRadius: BorderRadius.only(
-      //                               topRight: Radius.circular(20),
-      //                               bottomLeft: Radius.circular(20),
-      //                             ),
-      //                             boxShadow: [
-      //                               BoxShadow(
-      //                                 color: Colors.grey.withOpacity(0.5),
-      //                                 spreadRadius: 5,
-      //                                 blurRadius: 7,
-      //                                 offset: Offset(0, 3), // changes position of shadow
-      //                               ),
-      //                             ],
-      //                           ),
-      //                           width: 350,
-      //                           height: null,
-      //                           child: Column(
-      //                             mainAxisAlignment: MainAxisAlignment.center,
-      //                             children: [
-      //                               Text(
-      //                                 'Title: ${storyData['title']}',
-      //                                 textAlign: TextAlign.center,
-      //                                 style: TextStyle(
-      //                                   fontSize: 30,
-      //                                   fontWeight: FontWeight.bold,
-      //                                 ),
-      //                               ),
-      //                               Align(
-      //                                 alignment: Alignment.bottomRight,
-      //                                 child: Padding(
-      //                                   padding: const EdgeInsets.only( right: 16.0),
-      //                                   child: Text(
-      //                                     'By: ${storyData['user_email']}',
-      //                                     textAlign: TextAlign.end,
-      //                                     style: TextStyle(
-      //                                       fontSize: 10,
-      //                                     ),
-      //                                   ),
-      //                                 ),
-      //                               ),
-      //                               Align(
-      //                                 alignment: Alignment.bottomLeft,
-      //                                 child: Padding(
-      //                                   padding: const EdgeInsets.all(8.0),
-      //                                   child: Row(
-      //                                     children: [
-      //                                       Column(
-      //                                         children: [
-      //                                           LikeButton(isLiked: isLiked, onTap: () {}),
-      //                                           Text(
-      //                                             '${storyData['likes'] ?? 0}',
-      //                                             textAlign: TextAlign.start,
-      //                                             style: TextStyle(
-      //                                               fontSize: 20,
-      //                                               color: Colors.grey[700],
-      //                                             ),
-      //                                           ),
-      //                                         ],
-      //                                       ),
-      //                                       SizedBox(width: 30),
-      //                                       Column(
-      //                                         children: [
-      //                                           CommentButton(onTap: () {}),
-      //                                           FutureBuilder<int>(
-      //                                             future: getCommentsCount(storyData['id']),
-      //                                             builder: (context, commentsSnapshot) {
-      //                                               if (commentsSnapshot.connectionState == ConnectionState.waiting) {
-      //                                                 return CircularProgressIndicator();
-      //                                               } else if (commentsSnapshot.hasError) {
-      //                                                 return Text('Error: ${commentsSnapshot.error}');
-      //                                               } else {
-      //                                                 return Text(
-      //                                                   '${commentsSnapshot.data ?? 0}',
-      //                                                   textAlign: TextAlign.start,
-      //                                                   style: TextStyle(
-      //                                                     fontSize: 20,
-      //                                                     color: Colors.grey[700],
-      //                                                   ),
-      //                                                 );
-      //                                               }
-      //                                             },
-      //                                           ),
-      //                                         ],
-      //                                       ),
-      //                                     ],
-      //                                   ),
-      //                                 ),
-      //                               ),
-      //                             ],
-      //                           ),
-      //                         ),
-      //                       ),
-      //                     ),
-      //                     SizedBox(height: 16),
-      //                   ],
-      //                 ),
-      //             ],
-      //             ),
-      //           );
-      //         }
-      //       },
-      //     ),
-      //     SizedBox(height: 13),
-      //     ElevatedButton(
-      //       onPressed: () {
-      //         Navigator.push(
-      //           context,
-      //           MaterialPageRoute(
-      //             builder: (context) =>
-      //                 sharedStories(),
-      //           ),
-      //         );
-      //         print("button pressed");
-      //       },
-      //       style: ElevatedButton.styleFrom(
-      //         backgroundColor: const Color(0xFF9F7BFF),
-      //       ),
-      //       child: Text(
-      //         "Discover More",
-      //         style: TextStyle(
-      //           color: Colors.white,
-      //           fontSize: 30,
-      //           fontFamily: 'Poppins',
-      //           fontWeight: FontWeight.w500,
-      //         ),
-      //       ),
-      //     ),
-
-      //   ],
-      // ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   type: BottomNavigationBarType.fixed,
-      //   items: <BottomNavigationBarItem>[
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.home),
-      //       label:
-      //       AppLocalizations.of(context).translate('home_label') ?? 'Home',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.library_books),
-      //       label:'Stories',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.person),
-      //       label:
-      //       AppLocalizations.of(context).translate('profile_label') ??
-      //           'Profile',
-      //     ),
-
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.menu_book),
-      //       label:
-      //       AppLocalizations.of(context).translate('stories_label') ??
-      //           'My Stories',
-      //     ),
-      //   ],
-      //   currentIndex: 0,
-      //   selectedItemColor: Colors.amber[800],
-      //   onTap: (index) {
-      //     switch (index) {
-      //       case 0:
-      //         break;
-      //       case 1:
-      //         Navigator.push(
-      //           context,
-      //           MaterialPageRoute(
-      //             builder: (context) =>
-      //                 sharedStories(),
-      //           ),
-      //         );
-      //         break;
-      //       case 2:
-      //         Navigator.push(
-      //           context,
-      //           MaterialPageRoute(
-      //             builder: (context) => Profile(userEmail: widget.userEmail),
-      //           ),
-      //         );
-
-      //         break;
-      //       case 3:
-      //         Navigator.push(
-      //           context,
-      //           MaterialPageRoute(
-      //             builder: (context) =>
-      //                 SavedStoriesPage(userEmail: widget.userEmail),
-      //           ),
-      //         );
-      //         break;
-      //     }
-      //   },
-      // ),

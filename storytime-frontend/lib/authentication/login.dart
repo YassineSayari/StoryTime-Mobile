@@ -1,24 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:storytime/services/authentication_service.dart';
+import 'package:storytime/services/shared_preferences.dart';
 import 'package:storytime/theme.dart';
 import '../forgotpassword.dart';
-import '../homePage.dart';
 import '../languages/app_localizations.dart';
 import '../languages/language_provider.dart';
 import 'subscribe.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'authentication_helper.dart';
-import '../databasehelper.dart';
 import 'createprofile.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key, required this.controller, required this.appLocalizationDelegate}) : super(key: key);
+  const Login({Key? key, required this.controller,this.appLocalizationDelegate}) : super(key: key);
   final PageController controller;
-  final AppLocalizations appLocalizationDelegate;
+  final AppLocalizations? appLocalizationDelegate;
 
   @override
   State<Login> createState() => LoginState();
@@ -28,6 +23,10 @@ class LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController mail = TextEditingController();
   final TextEditingController password = TextEditingController();
+
+  
+  final AuthService authService=AuthService();
+
 
   LanguageProvider languageProvider = LanguageProvider();
   String selectedLanguage = 'Language : ';
@@ -47,105 +46,83 @@ class LoginState extends State<Login> {
     // Load the saved language
     languageProvider.loadSavedLanguage(context);
   }
-
-  Future<UserCredential?> signInWithGoogle() async {
-    
-    showDialog(context: context,
-        builder: (context){
-          return Center(child: SpinKitSpinningLines(color: Colors.blueAccent));
-        },
-    );
-
-
-    UserCredential? userCredential = await AuthenticationHelper.signInWithGoogle();
-
-    if (userCredential != null) {
-      String userEmail = userCredential.user?.email ?? "";
-      print("signed Up with email: $userEmail");
-
-      bool isRegistered = await DatabaseHelper.instance.isUserRegistered(userEmail);
-
-      if (isRegistered) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => homePage(controller: widget.controller, userEmail: userEmail),
-          ),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CreateProfile(
-              controller: widget.controller,
-              userEmail: userEmail,
-            ),
-          ),
-        );
-      }
-    }
-  }
-
-  bool log = false;
-  bool mdp = false;
   String email = "";
   late bool obscurePassword=true;
 
 
-    void saveToPrefsIfExists(UserCredential userCredential) async {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .get();
-        if (userDoc.exists) {
-          Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-          print("User is found::::::::::Saving to Prefs:::::::::::::::::::");
-
-          // Save user info in shared preferences
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('email', userData['email']);
-          prefs.setString('firstName', userData['firstName']);
-          prefs.setString('lastName', userData['lastName']);
-          prefs.setString('image', userData['image']?? ' ');
-        }
-        else{
-          print("::::::::::::No user found::::::::::");
-        }
-
-    }
-
-  void verifier() async {
+    void verifier() async {
+    print("verifying sign up");
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: mail.text,
-        password: password.text,
+      final Map<String, dynamic> result = await authService.login(
+        mail.text.trim(),
+        password.text.trim(),
       );
+      print(result);
 
-      if (userCredential.user != null) {
-        email = userCredential.user!.email!;
+      if (result.containsKey('token')) {
+        print('Login successful');
+
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: SuccessSnackBar(message: "Login Successfull !"),
+      //     duration: Duration(seconds: 2),
+      //     behavior: SnackBarBehavior.floating,
+      //     backgroundColor: Colors.transparent,
+      //     elevation: 0,
+      //   ),
+      // );
+
+          List<dynamic> roles = result['roles'];
+          String userRole = roles.isNotEmpty ? roles[0] : '';
+
+          //save in shared prefs
+          SharedPrefs.saveUserInfo(
+            result['id'] ?? '',
+            result['fullName'] ?? '',
+            result['email'] ?? '',
+            userRole,
+             result['image'] ?? '',
+          );
+
+      SharedPrefs.saveAuthToken(result['token']);
+
+      switch (userRole) {
+      case "Admin":
+        print('redirecting to admin page');
         setState(() {
-          log = true;
-          mdp = true;
+           Navigator.pushReplacementNamed(
+              context,'/home',
+            );
         });
-        saveToPrefsIfExists(userCredential);
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => homePage(controller: widget.controller, userEmail: email),
-          ),
-        );
+        break;
+      case "User":
+        print('redirecting to team leader page');
+        setState(() {
+          Navigator.pushReplacementNamed(
+              context,'/home',
+            );
+        });
+        break;  
+  }
+   }
+   else{
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: FailSnackBar(message: "Wrong email or password !"),
+  //         duration: Duration(seconds: 2),
+  //         behavior: SnackBarBehavior.floating,
+  //         backgroundColor: Colors.transparent,
+  //         elevation: 0,
+  //       ),
+  //     );
       }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        print('No user found for that email.');
-      } else if (e.code == 'wrong-password') {
-        print('Wrong password provided for that user.');
-      } else {
-        print('Error: ${e.message}');
-      }
+    } catch (error) {
+      print('Login error: $error');
+      
     }
   }
+
+
 
  
   @override
@@ -357,12 +334,12 @@ class LoginState extends State<Login> {
                       const SizedBox(height: 10),
                       GestureDetector(
                         onTap: () async {
-                          UserCredential? userCredential = await signInWithGoogle();
+                          // UserCredential? userCredential = await signInWithGoogle();
                         
-                          if (userCredential != null) {
-                            String userEmail = userCredential.user?.email ?? "";
-                            print("signed Up with email: $userEmail");
-                          }
+                          // if (userCredential != null) {
+                          //   String userEmail = userCredential.user?.email ?? "";
+                          //   print("signed Up with email: $userEmail");
+                          // }
                         },
                         child: SvgPicture.asset(
                           'assets/images/signin_with_google.svg',

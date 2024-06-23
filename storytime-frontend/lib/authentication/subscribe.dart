@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:storytime/const.dart';
 import 'package:storytime/theme.dart';
-import 'authentication_helper.dart';
 import '../languages/app_localizations.dart';
 import '../languages/language_provider.dart';
 import 'login.dart';
-import '../databasehelper.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../homePage.dart';
+import 'package:http/http.dart' as http;
 
 class Subscribe extends StatefulWidget {
   const Subscribe({Key? key, required this.controller}) : super(key: key);
@@ -21,8 +18,7 @@ class Subscribe extends StatefulWidget {
 class SubscribeState extends State<Subscribe> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController mail = TextEditingController();
-  final TextEditingController prenom = TextEditingController();
-  final TextEditingController nom = TextEditingController();
+  final TextEditingController fullname = TextEditingController();
   final TextEditingController password = TextEditingController();
   final TextEditingController passwordconf = TextEditingController();
 
@@ -36,68 +32,47 @@ class SubscribeState extends State<Subscribe> {
     languageProvider.loadSavedLanguage(context);
   }
 
-  final DatabaseHelper databaseHelper = DatabaseHelper.instance;
+  Future<void> _handleSignUp() async {
+  print("SIGNING UPPPPPPPPPP");
 
-  Future<UserCredential?> signInWithGoogle() async {
+  var request = http.MultipartRequest(
+    'POST',
+    Uri.parse('$baseUrl/api/v1/users/signup'), 
+  );
 
-    showDialog(context: context,
-      builder: (context){
-        return Center(child: CircularProgressIndicator());
-      },
-    );
+  request.fields['fullName'] = fullname.text;
+  request.fields['email'] = mail.text;
+  request.fields['password'] = password.text;
+  request.fields['roles[]'] = 'User';
 
 
-    UserCredential? userCredential = await AuthenticationHelper.signInWithGoogle();
+  print("sending data:::::::::request::::::$request");
+  print("request fields:::: ${request.fields},,,,,,,,, request files:::: ${request.files}");
 
+  var response = await request.send();
+  print("response::::$response");
 
-    if (userCredential != null) {
-      String userEmail = userCredential.user?.email ?? "";
-      print("signed Up with email: $userEmail");
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => homePage(controller: widget.controller, userEmail: userEmail),
-        ),
-      );
-    }
+  if (response.statusCode == 200) {
+    print("Signup successful");
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: SuccessSnackBar(message: "Signup successfull , waiting for admin confirmation!"),
+    //     duration: Duration(seconds: 2),
+    //     behavior: SnackBarBehavior.floating,
+    //     backgroundColor: Colors.transparent,
+    //     elevation: 0,
+    //   ),
+    // );
+    Navigator.of(context).pop();
+  } else {
+    // Handle error
+    print("Signup failed");
   }
+}
 
-  bool log = false;
-  bool mdp = false;
 
-  void verifier() async {
-    try {
-      UserCredential userCredential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: mail.text,
-        password: password.text,
-      );
 
-      if (userCredential.user != null && password.text == passwordconf.text) {
-        log = true;
-        mdp = true;
 
-        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-          'email': mail.text,
-          'firstName': prenom.text,
-          'lastName': nom.text,
-          'password':password.text,
-        });
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Login(controller: widget.controller, appLocalizationDelegate: AppLocalizations.of(context),)),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      // Handle registration errors
-      if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
-      } else {
-        print('Error: ${e.message}');
-      }
-    }
-  }
 
 
 
@@ -127,33 +102,18 @@ class SubscribeState extends State<Subscribe> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(height:70),
+                        
                             TextFormField(
-                              controller: prenom,
+                              controller: fullname,
                               keyboardType: TextInputType.text,
                               style: TextInputDecorations.textStyle,
                                  decoration: TextInputDecorations.customInputDecoration(
-                                 labelText: AppLocalizations.of(context).translate('first_name_label') ?? 'First Name',
-                                 hintText: AppLocalizations.of(context).translate('first_name_label') ?? 'First Name',
+                                 labelText: AppLocalizations.of(context).translate('last_name_label') ?? 'Name',
+                                 hintText: AppLocalizations.of(context).translate('last_name_label') ?? 'Name',
                                  ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter your first name';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: 16),
-                            TextFormField(
-                              controller: nom,
-                              keyboardType: TextInputType.text,
-                              style: TextInputDecorations.textStyle,
-                                 decoration: TextInputDecorations.customInputDecoration(
-                                 labelText: AppLocalizations.of(context).translate('last_name_label') ?? 'Last Name',
-                                 hintText: AppLocalizations.of(context).translate('last_name_label') ?? 'Last Name',
-                                 ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your last name';
+                                  return 'Please enter your name';
                                 }
                                 return null;
                               },
@@ -213,17 +173,11 @@ class SubscribeState extends State<Subscribe> {
                               width: double.infinity,
                               height: 55,
                               child: ElevatedButton(
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    verifier();
-                                    if (log && mdp) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => Login(controller: widget.controller, appLocalizationDelegate: AppLocalizations.of(context),)),
-                                      );
-                                    }
-                                  }
-                                },
+                                onPressed:  
+                                 
+                                   _handleSignUp,
+                                  
+                                
                                 style: AppButtonStyles.submitButtonStyle,
                                 child: Text(
                                   AppLocalizations.of(context).translate('sub_button') ?? 'Subscribe',
@@ -234,12 +188,12 @@ class SubscribeState extends State<Subscribe> {
                             SizedBox(height: 15),
                             GestureDetector(
                         onTap: () async {
-                          UserCredential? userCredential = await signInWithGoogle();
+                          // UserCredential? userCredential = await signInWithGoogle();
                         
-                          if (userCredential != null) {
-                            String userEmail = userCredential.user?.email ?? "";
-                            print("signed Up with email: $userEmail");
-                          }
+                          // if (userCredential != null) {
+                          //   String userEmail = userCredential.user?.email ?? "";
+                          //   print("signed Up with email: $userEmail");
+                          // }
                         },
                         child: SvgPicture.asset(
                           'assets/images/signin_with_google.svg',
