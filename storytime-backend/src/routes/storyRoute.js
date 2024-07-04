@@ -12,7 +12,8 @@ const upload = multer({ storage: fileStorageEngine });
 
 router.get('/getAllStories', authMiddleware, storyCtrl.getAllStories);
 router.get('/getStoriesByUser/:id',storyCtrl.getStoriesByUser);
-//router.get('/getStoriesById/:id', authMiddleware, procesvCtrl.getProcesById)
+router.get('/getSharedStories/',storyCtrl.getSharedStories);
+//router.get('/getStoryById/:id', authMiddleware, procesvCtrl.getProcesById)
 router.post('/addStory', storyCtrl.createStory);
 router.patch('/shareStory/:id',authMiddleware, storyCtrl.shareStory);
 //router.put('/updateStory/:id', authMiddleware, procesvCtrl.updateProcesv);

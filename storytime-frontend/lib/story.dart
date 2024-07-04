@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-class Story extends StatefulWidget {
+class ReadStory extends StatefulWidget {
   final String story;
   final String topic;
 
-  const Story({Key? key, required this.topic, required this.story}) : super(key: key);
+  const ReadStory({Key? key, required this.topic, required this.story}) : super(key: key);
 
   @override
-  _StoryState createState() => _StoryState();
+  _ReadStoryState createState() => _ReadStoryState();
 }
 
-class _StoryState extends State<Story> {
+class _ReadStoryState extends State<ReadStory> {
   FlutterTts flutterTts = FlutterTts();
   bool isPlaying = false;
   bool isPaused = false;

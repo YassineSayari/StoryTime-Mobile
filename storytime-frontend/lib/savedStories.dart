@@ -1,194 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:storytime/story.dart';
+import 'package:get_it/get_it.dart';
+import 'package:storytime/models/story_model.dart';
+import 'package:storytime/services/shared_preferences.dart';
+import 'package:storytime/services/stories_service.dart';
+import 'package:storytime/widgets/mystory_container.dart';
 
-// Define the SavedStory class
-class SavedStory {
-  final String id;
-  final String topic;
-  final String story;
+class MyStories extends StatefulWidget {
+  const MyStories({super.key});
 
-  SavedStory({required this.id, required this.topic, required this.story});
+  @override
+  State<MyStories> createState() => _MyStoriesState();
 }
 
-class SavedStoriesPage extends StatelessWidget {
-  final String userEmail;
+class _MyStoriesState extends State<MyStories> {
+  late Future<List<Story>> stories;
 
-  SavedStoriesPage({Key? key, required this.userEmail}) : super(key: key);
+  @override
+  void initState() {
+    super.initState();
+    stories = Future.value([]);
+    _loadUserInfo().then((_) {
+      if (userId != null) {
+        setState(() {
+          stories = StoryService().getStoriesByUser(userId!);
+        });
+      }
+    });
+  }
 
-  Future<List<SavedStory>> getUserStories() async {
+  final SharedPrefs sharedPrefs = SharedPrefs();
+  late Map<String, dynamic> userInfo = {};
+  late String? userId = " ";
+
+  Future<void> _loadUserInfo() async {
     try {
-      QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
-          .collection('stories')
-          .where('email', isEqualTo: userEmail)
-          .get();
-
-      List<SavedStory> userStories = snapshot.docs.map((doc) {
-        return SavedStory(
-          id: doc.id,
-          topic: doc.get('topic'),
-          story: doc.get('story'),
-        );
-      }).toList();
-
-      return userStories;
-    } catch (e) {
-      print('Error getting user stories: $e');
-      return [];
+      final data = await SharedPrefs.getUserInfo();
+      setState(() {
+        userInfo = data;
+        userId = data["userId"];
+        print("User loaded: id $userId");
+      });
+    } catch (error) {
+      print("Error loading user info: $error");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<SavedStory>>(
-      future: getUserStories(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: SpinKitSpinningLines(color: Colors.blueAccent));
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Text('No saved stories found.');
-        } else {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('My Stories', style: TextStyle(fontSize: 30)),
-              centerTitle: true,
-            ),
-            body: ListView.builder(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('My Stories'),
+      ),
+      body: FutureBuilder<List<Story>>(
+        future: stories,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No stories found'));
+          } else {
+            return ListView.builder(
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(
-                    snapshot.data![index].topic,
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.redo),
-                        onPressed: () async {
-                          // Show a confirmation dialog
-                          bool shareConfirmed = await showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Share Story'),
-                                content: Text('Are you sure you want to share this story to sharedStories?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context).pop(true),
-                                    child: Text('Share'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context).pop(false),
-                                    child: Text('Cancel'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-
-                          // Share the story if confirmed
-                          if (shareConfirmed == true) {
-                            try {
-                              // Get the story details
-                              String topic = snapshot.data![index].topic;
-                              String story = snapshot.data![index].story;
-
-                              // Add the story to the 'sharedStories' collection
-                              await FirebaseFirestore.instance.collection('sharedStories').add({
-                                'topic': topic,
-                                'story': story,
-                                'user_email': userEmail,
-                                'likes': [], // Initialize likes to 0
-                              });
-
-                              // Optionally, you can show a success message or perform any other action
-                              print('Story shared successfully to sharedStories collection!');
-                            } catch (e) {
-                              print('Error sharing story: $e');
-                              // Handle the error as needed
-                            }
-                          }
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.share),
-                        onPressed: () {
-                          // Implement share functionality here
-                          // You can use share plugins like 'share_plus'
-                          // Example: Share.share(snapshot.data![index].story);
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () async {
-                          // Show a confirmation dialog
-                          bool deleteConfirmed = await showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Delete Story'),
-                                content: Text('Are you sure you want to delete this story?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      print("Delete Confirmed");
-                                      Navigator.of(context).pop(true);
-                                    },
-                                    child: Text('Delete'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context).pop(false),
-                                    child: Text('Cancel'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-
-                          // Delete the story if confirmed
-                          if (deleteConfirmed == true) {
-                            await FirebaseFirestore.instance
-                                .collection('stories')
-                                .doc(snapshot.data![index].id)
-                                .delete();
-
-                            // Reload the page to reflect changes
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SavedStoriesPage(userEmail: userEmail),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            Story(topic: snapshot.data![index].topic, story: snapshot.data![index].story),
-                      ),
-                    );
-                  },
-                );
+                final story = snapshot.data![index];
+                return MyStoryContainer(title:story.title, story:story.story, date:story.date);
               },
-            ),
-          );
-        }
-      },
+            );
+          }
+        },
+      ),
     );
   }
 }

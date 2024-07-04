@@ -13,6 +13,14 @@ module.exports.getAllStories = async function (req, res) {
 };
 
 
+module.exports.getSharedStories = async function (req, res) {
+    Story.find({ isShared:true }).populate("Owner", "-password")
+        .then((Stories) => {
+            res.status(200).json(Stories);
+        })
+        .catch((error) => res.status(404).json({ message: error }));
+};
+
 module.exports.getStoriesByUser = async function (req, res) {
     const userId = req.params.id;
 

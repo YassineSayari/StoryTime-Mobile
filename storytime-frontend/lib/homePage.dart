@@ -73,7 +73,7 @@ class homePageState extends State<homePage> {
     getUserImageUrl();
 
 
-    timer = Timer.periodic(Duration(seconds: 3), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (currentPage < imageCarouselUrls.length - 1) {
         currentPage++;
       } else {
@@ -81,7 +81,7 @@ class homePageState extends State<homePage> {
       }
       widget.controller.animateToPage(
         currentPage,
-        duration: Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
     });
@@ -350,27 +350,16 @@ Widget build(BuildContext context) {
   return Scaffold(
     body: CustomScrollView(
       slivers: [
-        SliverAppBar(
-          backgroundColor: Colors.deepPurple,
+        const SliverAppBar(
           expandedHeight: 200,
           flexibleSpace: FlexibleSpaceBar(
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'StoryTime',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontFamily: AppTheme.fontName,
-                    fontSize: 20,
-                  ),
-                ),
-                      //  Container(
-                      //    child: CircleAvatar(
-                      //     backgroundImage: Image.network(noImage),
-                      //                          ),
-                      //  ),
-              ],
+            title: Text(
+              'StoryTime',
+              style: TextStyle(
+                color: Colors.black,
+                fontFamily: AppTheme.fontName,
+                fontSize: 30,
+              ),
             ),
           ),
         ),
@@ -382,20 +371,20 @@ Widget build(BuildContext context) {
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context).translate('story_prompt') ??
                     'Enter Your Story Topic',
-                labelStyle: TextStyle(
+                labelStyle: const TextStyle(
                   color: Colors.black,
                   fontSize: 15,
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.w600,
                 ),
-                enabledBorder: OutlineInputBorder(
+                enabledBorder: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   borderSide: BorderSide(
                     width: 3,
                     color: Colors.black45,
                   ),
                 ),
-                focusedBorder: OutlineInputBorder(
+                focusedBorder: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   borderSide: BorderSide(
                     width: 3,
@@ -413,7 +402,7 @@ Widget build(BuildContext context) {
             ),
           ),
         ),
-        SliverToBoxAdapter(
+        const SliverToBoxAdapter(
           child: SizedBox(height: 20.0), // Spacer
         ),
         SliverToBoxAdapter(
@@ -431,7 +420,7 @@ Widget build(BuildContext context) {
                 child: Text(
                   AppLocalizations.of(context).translate('generate_story_button') ??
                       'Generate Story',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 30,
                     fontFamily: 'Poppins',
@@ -449,9 +438,9 @@ Widget build(BuildContext context) {
             child: listeDesImages(),
           ),
         ),
-        SliverToBoxAdapter(
+        const SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: EdgeInsets.all(20.0),
             child: Center(
               child: Text(
                 "Stories around the world",
@@ -472,11 +461,11 @@ Widget build(BuildContext context) {
               future: getSharedStories(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Text('No shared stories found.');
+                  return const Text('No shared stories found.');
                 } else {
                   return IntrinsicHeight(
                     child: Column(
@@ -500,12 +489,12 @@ Widget build(BuildContext context) {
                                   );
                                 },
                                 child: Animate(
-                                  effects: [FadeEffect(duration: 1200.ms), ShimmerEffect()],
+                                  effects: [FadeEffect(duration: 1200.ms), const ShimmerEffect()],
                                   child: Container(
                                     decoration: BoxDecoration(
                                       shape: BoxShape.rectangle,
-                                      color: Color(0xff8191da),
-                                      borderRadius: BorderRadius.only(
+                                      color: const Color(0xff8191da),
+                                      borderRadius: const BorderRadius.only(
                                         topRight: Radius.circular(20),
                                         bottomLeft: Radius.circular(20),
                                       ),
@@ -514,7 +503,7 @@ Widget build(BuildContext context) {
                                           color: Colors.grey.withOpacity(0.5),
                                           spreadRadius: 5,
                                           blurRadius: 7,
-                                          offset: Offset(0, 3), // changes position of shadow
+                                          offset: const Offset(0, 3), // changes position of shadow
                                         ),
                                       ],
                                     ),
@@ -526,7 +515,7 @@ Widget build(BuildContext context) {
                                         Text(
                                           'Title: ${storyData['title']}',
                                           textAlign: TextAlign.center,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 30,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -538,7 +527,7 @@ Widget build(BuildContext context) {
                                             child: Text(
                                               'By: ${storyData['user_email']}',
                                               textAlign: TextAlign.end,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 10,
                                               ),
                                             ),
@@ -563,7 +552,7 @@ Widget build(BuildContext context) {
                                                     ),
                                                   ],
                                                 ),
-                                                SizedBox(width: 30),
+                                                const SizedBox(width: 30),
                                                 Column(
                                                   children: [
                                                     CommentButton(onTap: () {}),
@@ -571,7 +560,7 @@ Widget build(BuildContext context) {
                                                       future: getCommentsCount(storyData['id']),
                                                       builder: (context, commentsSnapshot) {
                                                         if (commentsSnapshot.connectionState == ConnectionState.waiting) {
-                                                          return CircularProgressIndicator();
+                                                          return const CircularProgressIndicator();
                                                         } else if (commentsSnapshot.hasError) {
                                                           return Text('Error: ${commentsSnapshot.error}');
                                                         } else {
@@ -597,7 +586,7 @@ Widget build(BuildContext context) {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                             ],
                           ),
                       ],
@@ -616,7 +605,7 @@ Widget build(BuildContext context) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => sharedStories(),
+                    builder: (context) => const sharedStories(),
                   ),
                 );
                 print("button pressed");
@@ -624,7 +613,7 @@ Widget build(BuildContext context) {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF9F7BFF),
               ),
-              child: Text(
+              child: const Text(
                 "Discover More",
                 style: TextStyle(
                   color: Colors.white,
@@ -646,7 +635,7 @@ Widget build(BuildContext context) {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF9F7BFF),
               ),
-              child: Text(
+              child: const Text(
                 "logout",
                 style: TextStyle(
                   color: Colors.white,
@@ -665,30 +654,30 @@ Widget build(BuildContext context) {
         type: BottomNavigationBarType.fixed,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: const Icon(Icons.home),
             label:
             AppLocalizations.of(context).translate('home_label') ?? 'Home',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.library_books),
             label:'Stories',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: const Icon(Icons.person),
             label:
             AppLocalizations.of(context).translate('profile_label') ??
                 'Profile',
           ),
 
           BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
+            icon: const Icon(Icons.menu_book),
             label:
             AppLocalizations.of(context).translate('stories_label') ??
                 'My Stories',
           ),
         ],
         currentIndex: 0,
-        selectedItemColor: Colors.amber[800],
+        selectedItemColor: Color.fromARGB(255, 63, 23, 121),
         onTap: (index) {
           switch (index) {
             case 0:
@@ -698,7 +687,7 @@ Widget build(BuildContext context) {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      sharedStories(),
+                      const sharedStories(),
                 ),
               );
               break;
@@ -706,7 +695,7 @@ Widget build(BuildContext context) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Profile(),
+                  builder: (context) => const Profile(),
                 ),
               );
 
@@ -715,8 +704,8 @@ Widget build(BuildContext context) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      SavedStoriesPage(userEmail: widget.userEmail!),
+                  builder: (context) => MyStories(),
+                      
                 ),
               );
               break;
