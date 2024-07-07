@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:storytime/models/story_model.dart';
+import 'package:storytime/services/stories_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -15,6 +17,7 @@ import 'package:storytime/profile/profile_screen.dart';
 import 'package:storytime/services/authentication_service.dart';
 import 'package:storytime/sharedstories.dart';
 import 'package:storytime/theme.dart';
+import 'package:storytime/widgets/mystory_container.dart';
 import 'languages/app_localizations.dart';
 import 'languages/language_provider.dart';
 
@@ -262,31 +265,21 @@ class homePageState extends State<homePage> {
   }
 
 
-  Future<List<Map<String, dynamic>>> getSharedStories() async {
-    try {
-      QuerySnapshot<Map<String, dynamic>> snapshot =
-      await FirebaseFirestore.instance.collection('sharedStories').limit(3).get();
+Future<List<Story>> getSharedStories() async {
+  try {
+    // Create an instance of StoryService
+    final storyService = StoryService();
+    
+    // Call the instance method
+    List<Story> stories = await storyService.getSharedStories();
 
-
-
-      List<Map<String, dynamic>> stories = snapshot.docs.map((doc) {
-        return {
-          'id':doc.id,
-          'title': doc.get('topic') as String,
-          'user_email': doc.get('user_email') as String,
-          'full_story': doc.get('story') as String,
-          'likes': (doc.get('likes') as List).length ?? 0,
-
-        };
-      }).toList();
-
-
-      return stories;
-    } catch (e) {
-      print('Error getting shared stories: $e');
-      return [];
-    }
+    return stories;
+  } catch (e) {
+    print('Error getting shared stories: $e');
+    return [];
   }
+}
+
 
   Future<int> getCommentsCount(String storyId) async {
     try {
@@ -457,7 +450,7 @@ Widget build(BuildContext context) {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
-            child: FutureBuilder<List<Map<String, dynamic>>>(
+            child: FutureBuilder<List<Story>>(
               future: getSharedStories(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -467,136 +460,27 @@ Widget build(BuildContext context) {
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Text('No shared stories found.');
                 } else {
-                  return IntrinsicHeight(
+                  return Animate(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (Map<String, dynamic> storyData in snapshot.data!)
-                          Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => readSharedStory(
-                                        topic: storyData['title'], // Replace with your actual topic data
-                                        story: storyData['full_story'],
-                                        storyId: storyData['id'],
-                                        // Replace with your actual full story data
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Animate(
-                                  effects: [FadeEffect(duration: 1200.ms), const ShimmerEffect()],
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.rectangle,
-                                      color: const Color(0xff8191da),
-                                      borderRadius: const BorderRadius.only(
-                                        topRight: Radius.circular(20),
-                                        bottomLeft: Radius.circular(20),
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey.withOpacity(0.5),
-                                          spreadRadius: 5,
-                                          blurRadius: 7,
-                                          offset: const Offset(0, 3), // changes position of shadow
-                                        ),
-                                      ],
-                                    ),
-                                    width: 350,
-                                    height: null,
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'Title: ${storyData['title']}',
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontSize: 30,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Align(
-                                          alignment: Alignment.bottomRight,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(right: 16.0),
-                                            child: Text(
-                                              'By: ${storyData['user_email']}',
-                                              textAlign: TextAlign.end,
-                                              style: const TextStyle(
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Align(
-                                          alignment: Alignment.bottomLeft,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Row(
-                                              children: [
-                                                Column(
-                                                  children: [
-                                                    LikeButton(isLiked: isLiked, onTap: () {}),
-                                                    Text(
-                                                      '${storyData['likes'] ?? 0}',
-                                                      textAlign: TextAlign.start,
-                                                      style: TextStyle(
-                                                        fontSize: 20,
-                                                        color: Colors.grey[700],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(width: 30),
-                                                Column(
-                                                  children: [
-                                                    CommentButton(onTap: () {}),
-                                                    FutureBuilder<int>(
-                                                      future: getCommentsCount(storyData['id']),
-                                                      builder: (context, commentsSnapshot) {
-                                                        if (commentsSnapshot.connectionState == ConnectionState.waiting) {
-                                                          return const CircularProgressIndicator();
-                                                        } else if (commentsSnapshot.hasError) {
-                                                          return Text('Error: ${commentsSnapshot.error}');
-                                                        } else {
-                                                          return Text(
-                                                            '${commentsSnapshot.data ?? 0}',
-                                                            textAlign: TextAlign.start,
-                                                            style: TextStyle(
-                                                              fontSize: 20,
-                                                              color: Colors.grey[700],
-                                                            ),
-                                                          );
-                                                        }
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                            ],
+                      children: snapshot.data!.map((story) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: MyStoryContainer(
+                            title: story.title,
+                            story: story.story,
+                            date: story.date,
                           ),
-                      ],
+                        );
+                      }).toList(),
                     ),
-                  );
+                  ) .fade(duration: 500.ms)
+  .scale(delay: 500.ms) ;
                 }
               },
             ),
           ),
         ),
+
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(20.0),

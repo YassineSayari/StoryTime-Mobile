@@ -24,8 +24,9 @@ class StoryService{
 
     Future<List<Story>> getSharedStories() async {
     final response = await http.get(Uri.parse("$apiUrl/getSharedStories"));
-
+    print("::::::::::getting shared Stories::::::::::");
     if (response.statusCode == 200) {
+       print("::::::::::got Shared Stories::::::::::");
           final List<dynamic> jsonData = json.decode(response.body);
       return jsonData.map((eventData) => Story.fromJson(eventData)).toList();
     } else {
