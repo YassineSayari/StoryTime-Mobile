@@ -5,6 +5,8 @@ class Story {
   DateTime date;
   bool isShared;
   String owner;
+  List<String> likes;
+
 
   Story({
     this.id,
@@ -13,6 +15,7 @@ class Story {
     required this.date,
     required this.isShared,
     required this.owner,
+    required this.likes,
   });
 
   // Factory constructor to create a Story from JSON
@@ -24,6 +27,7 @@ class Story {
       date: DateTime.parse(json['Date'] ?? DateTime.now().toIso8601String()),
       isShared: json['isShared'] ?? false,
       owner: json['Owner'] != null ? json['Owner']['_id'] ?? '' : '',
+      likes: List<String>.from(json['Likes'] ?? []),
     );
   }
 
@@ -36,6 +40,8 @@ class Story {
       'Date': date.toIso8601String(),
       'isShared': isShared,
       'Owner': owner,
+      'Likes': likes,
     };
   }
+  
 }

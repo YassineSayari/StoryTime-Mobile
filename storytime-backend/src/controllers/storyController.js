@@ -102,6 +102,65 @@ module.exports.shareStory = async function(req, res) {
 };
 
 
+module.exports.likeStory = async function (req, res) {
+    const ID = req.params.id;
+    const userId = req.body.userId;
+
+    // if (!mongoose.Types.ObjectId.isValid(ID)) {
+    //     return res.status(404).json("ID is not valid");
+    // }
+
+    // if (!mongoose.Types.ObjectId.isValid(userId)) {
+    //     return res.status(404).json("User ID is not valid");
+    // }
+
+    try {
+        const story = await Story.findByIdAndUpdate(
+            ID,
+            { $addToSet: { Likes: userId } }, // Add the user ID to the Likes array
+            { new: true } // Return the updated document
+        );
+
+        if (!story) {
+            return res.status(404).json("Story not found");
+        }
+
+        return res.status(200).json(story);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
+
+module.exports.removeLike = async function (req,res) {
+    const ID = req.params.id;
+    const userId = req.body.userId;
+
+    // if (!mongoose.Types.ObjectId.isValid(ID)) {
+    //     return res.status(404).json("ID is not valid");
+    // }
+
+    // if (!mongoose.Types.ObjectId.isValid(userId)) {
+    //     return res.status(404).json("User ID is not valid");
+    // }
+    try {
+        const story = await Story.findByIdAndUpdate(
+            ID,
+            { $pull: { Likes: userId } }, // remove the user ID from the Likes array
+            { new: true } // Return the updated document
+        );
+
+        if (!story) {
+            return res.status(404).json("Story not found");
+        }
+
+        return res.status(200).json(story);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+
+}
+
 module.exports.deleteStory = async function (req, res) {
     const ID = req.params.id;
 

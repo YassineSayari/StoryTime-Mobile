@@ -8,7 +8,7 @@ const StorySchema = new mongoose.Schema({
     Date: { type: Date, default: Date.now },
     isShared: { type: Boolean, default: false },
     Owner: { type: mongoose.Types.ObjectId, ref: "User" },
-
+    Likes: [{ type: mongoose.Types.ObjectId, ref: "User" }],
 });
 
 module.exports = mongoose.model("Story", StorySchema);

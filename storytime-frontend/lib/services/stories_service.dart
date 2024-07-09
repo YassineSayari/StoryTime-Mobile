@@ -34,4 +34,38 @@ class StoryService{
     }
   }
 
+  Future<bool> likeStory(String storyId, String userId) async {
+    final response = await http.patch(
+      Uri.parse("$apiUrl/likeStory/$storyId"),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'userId': userId}),
+    );
+    print("User ::::$userId:::::::::adding like:::::::::::to story::::::$storyId");
+    print("Response status: ${response.statusCode}");
+    print("Response body: ${response.body}");
+    if (response.statusCode == 200) {
+      print("::::::::::LIKE ADDED::::::::::");
+      return true;
+    } else {
+      throw Exception('Failed to like');
+    }
+  }
+
+  Future<bool> removeLike(String storyId, String userId) async {
+    final response = await http.patch(
+      Uri.parse("$apiUrl/removeLike/$storyId"),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'userId': userId}),
+    );
+    print(":::::::::removing like:::::::::::");
+    print("Response status: ${response.statusCode}");
+    print("Response body: ${response.body}");
+    if (response.statusCode == 200) {
+      print("::::::::::LIKE REMOVED::::::::::");
+      return true;
+    } else {
+      throw Exception('Failed to remove like');
+    }
+  }
+
 }

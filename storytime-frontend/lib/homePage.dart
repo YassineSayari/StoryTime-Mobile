@@ -466,9 +466,7 @@ Widget build(BuildContext context) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: MyStoryContainer(
-                            title: story.title,
-                            story: story.story,
-                            date: story.date,
+                            story:story,
                           ),
                         );
                       }).toList(),

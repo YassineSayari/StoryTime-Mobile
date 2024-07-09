@@ -65,7 +65,7 @@ class _MyStoriesState extends State<MyStories> {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 final story = snapshot.data![index];
-                return MyStoryContainer(title:story.title, story:story.story, date:story.date);
+                return MyStoryContainer(story:story);
               },
             );
           }
