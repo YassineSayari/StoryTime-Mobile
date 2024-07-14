@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:storytime/const.dart';
+import 'package:storytime/models/comment_model.dart';
+import 'package:storytime/models/story_model.dart';
 
 class ReadStory extends StatefulWidget {
-  final String story;
-  final String topic;
+  final Story story;
+  final List<Comment> comments;
 
-  const ReadStory({Key? key, required this.topic, required this.story}) : super(key: key);
+  const ReadStory({Key? key, required this.story, required this.comments}) : super(key: key);
 
   @override
   _ReadStoryState createState() => _ReadStoryState();
@@ -18,6 +21,8 @@ class _ReadStoryState extends State<ReadStory> {
 
   @override
   void initState() {
+      print("comments:::::::::::::: ${widget.comments}");
+
     super.initState();
     flutterTts.setLanguage("en-US"); // Set the language of the text
 
@@ -38,6 +43,9 @@ class _ReadStoryState extends State<ReadStory> {
       });
     });
   }
+
+
+  
 
   void initTTS() {
     flutterTts.getVoices.then((data) {
@@ -70,7 +78,7 @@ class _ReadStoryState extends State<ReadStory> {
 
       await flutterTts.setPitch(1.0);
 
-      await flutterTts.speak(widget.story);
+      await flutterTts.speak(widget.story.story);
 
       // Listen for TTS completion to update the UI
       flutterTts.setProgressHandler((String text, int start, int end, String word) {
@@ -118,7 +126,7 @@ class _ReadStoryState extends State<ReadStory> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.topic),
+        title: Text(widget.story.title),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -127,7 +135,7 @@ class _ReadStoryState extends State<ReadStory> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${widget.topic}:\n',
+                '${widget..story.title}:\n',
                 style: TextStyle(
                   fontSize: 29,
                   fontWeight: FontWeight.bold,
@@ -158,14 +166,77 @@ class _ReadStoryState extends State<ReadStory> {
               ),
               SizedBox(height: 10),
               Text(
-                '${widget.story}',
+                '${widget.story.story}',
                 style: TextStyle(
                   fontSize: 22,
                 ),
               ),
+            SizedBox(height: 20),
+              Text(
+                'Comments:',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+             ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: widget.comments.length,
+                itemBuilder: (context, index) {
+                  final comment = widget.comments[index];
+                  return CommentWidget(comment: comment);
+                },
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class CommentWidget extends StatelessWidget {
+  final Comment comment;
+
+  const CommentWidget({Key? key, required this.comment}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            backgroundImage: NetworkImage('$imageUrl/${comment.user.image}'),
+            radius: 20,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  comment.user.fullName,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(comment.comment),
+                SizedBox(height: 4),
+                Text(
+                  comment.date.toLocal().toIso8601String().substring(0, 10),
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

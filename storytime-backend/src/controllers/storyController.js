@@ -13,6 +13,36 @@ module.exports.getAllStories = async function (req, res) {
 };
 
 
+module.exports.getStoryById = async function (req, res) {
+    try {
+        const storyId = req.params.id;
+
+        const story = await Story.findById(storyId)
+            .populate('Owner', '-password'); // Populate Owner with fullName and image
+            // .populate({
+            //     path: 'Comments',
+            //     populate: {
+            //         path: 'User',
+            //         select: 'fullName image' // Populate User in Comments with fullName and image
+            //     }
+            // });
+
+        if (!story) {
+            return res.status(404).json({
+                message: 'Story not found',
+                error: 'The specified story does not exist'
+            });
+        }
+
+        res.status(200).json(story);
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error retrieving story',
+            error: error.message
+        });
+    }
+};
+
 module.exports.getSharedStories = async function (req, res) {
     Story.find({ isShared:true }).populate("Owner", "-password")
         .then((Stories) => {
@@ -27,7 +57,7 @@ module.exports.getStoriesByUser = async function (req, res) {
     const user = await User.findById({ _id: userId });
 
     Story.find({ Owner: user._id })
-        .populate("Owner", "-password")
+        .populate("Owner", "-password")    
         .then((stories) => {
             res.status(200).json(stories);
         })

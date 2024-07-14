@@ -13,6 +13,9 @@ class StoryService{
     print("getting stories for user :::::::::::: $id");
     final response = await http.get(Uri.parse("$apiUrl/getStoriesByUser/$id"));
 
+     print("Response status code: ${response.statusCode}");
+  print("Response body: ${response.body}");
+
     if (response.statusCode == 200) {
       print("::::::::::got Stories::::::::::");
           final List<dynamic> jsonData = json.decode(response.body);
@@ -67,5 +70,12 @@ class StoryService{
       throw Exception('Failed to remove like');
     }
   }
+
+
+
+
+////////////////////////////////////comments////////////////////////////
+
+
 
 }

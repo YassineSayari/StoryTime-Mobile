@@ -6,6 +6,7 @@ class Story {
   bool isShared;
   String owner;
   List<String> likes;
+ // List<String> comments;
 
 
   Story({
@@ -16,6 +17,7 @@ class Story {
     required this.isShared,
     required this.owner,
     required this.likes,
+    //required this.comments,
   });
 
   // Factory constructor to create a Story from JSON
@@ -28,6 +30,7 @@ class Story {
       isShared: json['isShared'] ?? false,
       owner: json['Owner'] != null ? json['Owner']['_id'] ?? '' : '',
       likes: List<String>.from(json['Likes'] ?? []),
+      //comments :  List<String>.from(json['Comments'] ?? []),
     );
   }
 
@@ -41,6 +44,7 @@ class Story {
       'isShared': isShared,
       'Owner': owner,
       'Likes': likes,
+     // 'Comments': comments,
     };
   }
   

@@ -484,12 +484,12 @@ Widget build(BuildContext context) {
             padding: const EdgeInsets.all(20.0),
             child: ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const sharedStories(),
-                  ),
-                );
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => const sharedStories(),
+                //   ),
+                // );
                 print("button pressed");
               },
               style: ElevatedButton.styleFrom(

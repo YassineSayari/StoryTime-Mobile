@@ -8,6 +8,7 @@ const path = require('path');
 // import routes
 const usersRoute = require("./src/routes/userRoute");
 const storyRoute = require("./src/routes/storyRoute");
+const commentRoute = require("./src/routes/commentRoute");
 //Request body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -21,5 +22,6 @@ app.use('/static/images', express.static(path.join(__dirname, './src/static/imag
 //define routes
 app.use(`/api/v1/users`, usersRoute);
 app.use(`/api/v1/stories`, storyRoute);
+app.use(`/api/v1/comments`, commentRoute);
 
 module.exports = app; 
