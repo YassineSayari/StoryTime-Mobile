@@ -18,8 +18,9 @@ class UserService{
   Future<User> getUserbyId(String id) async{
         final response = await http.get(Uri.parse(apiUrl+"/getUserById/$id"));
         if (response.statusCode==200){
-          print("user exists");
+          print("::::::user exists::::::::");
           User user=User.fromJson(json.decode(response.body));
+          print("user::::::::$user");
           return user;
         }else {
       throw Exception('Failed to load users');

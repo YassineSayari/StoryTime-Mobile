@@ -10,9 +10,9 @@ import 'package:storytime/services/stories_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
-import 'package:storytime/components/comment_button.dart';
-import 'package:storytime/components/like_button.dart';
-import 'package:storytime/languages/readsharedstory.dart';
+// import 'package:storytime/components/comment_button.dart';
+// import 'package:storytime/components/like_button.dart';
+// import 'package:storytime/languages/readsharedstory.dart';
 import 'package:storytime/profile/profile_screen.dart';
 import 'package:storytime/services/authentication_service.dart';
 import 'package:storytime/sharedstories.dart';
@@ -101,7 +101,7 @@ class homePageState extends State<homePage> {
   Future<void> generateStory(String topic) async {
     print('Generating story...');
 
-    final apiKey = 'AIzaSyCCfqRXuA96Z2UqjMRY4lKmMrSKkfQdImg'; // Replace with your actual API key
+    final apiKey = 'AIzaSyDKkwnSbC8b1lLnPpVLfdPOTYPS7RZ2TZ8'; // Replace with your actual API key
     final textEndpoint = 'https://generativelanguage.googleapis.com/v1beta2/models/chat-bison-001:generateMessage?key=$apiKey';
     final unsplashEndpoint = 'https://api.unsplash.com/photos/random';
     final unsplashAccessKey = 'hYIAb65E5FOFs_t2SyLqm6YBgd2vGXfv9hUfD_dujzI'; // Replace with your actual Unsplash API key
@@ -168,7 +168,7 @@ class homePageState extends State<homePage> {
           generatedStory = storyContent.toString(); // Convert storyContent to string
         });
 
-        saveStory(topic, generatedStory, widget.userEmail!);
+       // saveStory(topic, generatedStory, widget.userEmail!);
 
         final unsplashResponse = await http.get(
           Uri.parse('$unsplashEndpoint?query=$topic as a child friendly image'),

@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+import 'package:storytime/authentication/authentication_helper.dart';
 import 'package:storytime/services/authentication_service.dart';
 import 'package:storytime/services/shared_preferences.dart';
 import 'package:storytime/theme.dart';
@@ -9,6 +12,9 @@ import '../languages/app_localizations.dart';
 import '../languages/language_provider.dart';
 import 'subscribe.dart';
 import 'createprofile.dart';
+
+
+
 
 class Login extends StatefulWidget {
   const Login({Key? key, required this.controller,this.appLocalizationDelegate}) : super(key: key);
@@ -121,6 +127,47 @@ class LoginState extends State<Login> {
       
     }
   }
+
+
+  Future<UserCredential?> signInWithGoogle() async {
+    UserCredential? userCredential = await AuthenticationHelper.signInWithGoogle();
+
+    if (userCredential != null) {
+      String userEmail = userCredential.user?.email ?? "";
+      print("signed Up with email: $userEmail");
+
+      final Map<String, dynamic> result = await authService.checkGoogleAuth(
+        userEmail,
+      );
+      print(result);
+
+      if (result.containsKey('token')) {
+        print('Login successful');
+                  List<dynamic> roles = result['roles'];
+          String userRole = roles.isNotEmpty ? roles[0] : '';
+
+          //save in shared prefs
+          SharedPrefs.saveUserInfo(
+            result['id'] ?? '',
+            result['fullName'] ?? '',
+            userEmail,
+            userRole,
+             result['image'] ?? '',
+          );
+
+      SharedPrefs.saveAuthToken(result['token']);
+ }
+
+
+        setState(() {
+           Navigator.pushReplacementNamed(
+              context,'/home',
+            );
+        });
+      }
+
+  }
+
 
 
 
@@ -334,12 +381,7 @@ class LoginState extends State<Login> {
                       const SizedBox(height: 10),
                       GestureDetector(
                         onTap: () async {
-                          // UserCredential? userCredential = await signInWithGoogle();
-                        
-                          // if (userCredential != null) {
-                          //   String userEmail = userCredential.user?.email ?? "";
-                          //   print("signed Up with email: $userEmail");
-                          // }
+                          signInWithGoogle();
                         },
                         child: SvgPicture.asset(
                           'assets/images/signin_with_google.svg',

@@ -21,18 +21,16 @@ class _EditProfileState extends State<EditProfile> {
 
   
     final TextEditingController nameController=TextEditingController();
-    final TextEditingController cityController=TextEditingController();
     final TextEditingController phoneController=TextEditingController();
     final TextEditingController countryController=TextEditingController();
     final TextEditingController addressController=TextEditingController();
-    final TextEditingController nationalityController=TextEditingController();
-
+    final TextEditingController emailController=TextEditingController();
 
       @override
   void initState() {
     nameController.text = widget.user.fullName;
-    cityController.text = widget.user.fullName;
     countryController.text = widget.user.fullName;
+    emailController.text = widget.user.email;
 
 
     super.initState();
@@ -128,7 +126,7 @@ class _EditProfileState extends State<EditProfile> {
             SizedBox(height: 10),  
 
             TextFormField(
-             controller: cityController,
+             controller: emailController,
               keyboardType: TextInputType.text,
               style: TextInputDecorations.textStyle,
               decoration: TextInputDecorations.customInputDecoration(labelText: 'City'),
@@ -188,23 +186,8 @@ class _EditProfileState extends State<EditProfile> {
 
             SizedBox(height: 10),
 
-            TextFormField(
-             controller: nationalityController,
-              keyboardType: TextInputType.text,
-              style: TextInputDecorations.textStyle,
-              decoration: TextInputDecorations.customInputDecoration(labelText: 'Nationality'),
-                      validator: (value) {
-                             if (value == null || value.isEmpty) {
-                               return 'Please enter a nationality';
-                              }
-                               return null;
-                             },
-            ),
-
-            SizedBox(height: 10),
-
             ElevatedButton(onPressed: (){
-              updateEmployee();
+            //  updateEmployee();
             },
              child: Text("Save",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 25,fontFamily: AppTheme.fontName, ),),
              style: ElevatedButton.styleFrom(
@@ -222,42 +205,41 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
-    Future<void> updateEmployee() async {
+    // Future<void> updateEmployee() async {
 
-      String updatedAddress = '${countryController.text},${cityController.text},${addressController.text}';
+    //   String updatedAddress = '${countryController.text},${cityController.text},${addressController.text}';
 
-      try {
-        Map<String, dynamic> updatedData = {
-          'fullName': nameController.text,
-          'phone': phoneController.text,
-          'address': updatedAddress,
-          'nationality': nationalityController.text,
+    //   try {
+    //     Map<String, dynamic> updatedData = {
+    //       'fullName': nameController.text,
+    //       'phone': phoneController.text,
+    //       'address': updatedAddress,
 
-        };
+    //     };
 
-        print("updating employee");
-        await userService.updateUser(widget.user.id, updatedData);
-        Navigator.of(context).pushReplacementNamed('/profile');
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(
-        //     content: SuccessSnackBar(message: "Profile updated successfully!"),
-        //     duration: Duration(seconds: 2),
-        //     behavior: SnackBarBehavior.floating,
-        //     backgroundColor: Colors.transparent,
-        //     elevation: 0,
-        //   ),
-        // );
-      } catch (error) {
-        print('Error updating employee: $error');
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //          SnackBar(
-        //     content: FailSnackBar(message: "Failed to update profile, please try again"),
-        //     duration: Duration(seconds: 2),
-        //     behavior: SnackBarBehavior.floating,
-        //     backgroundColor: Colors.transparent,
-        //     elevation: 0,
-        //   ),
-        // ); 
-      }
-    }
+    //     print("updating employee");
+    //     await userService.updateUser(widget.user.id, updatedData);
+    //     Navigator.of(context).pushReplacementNamed('/profile');
+    //     // ScaffoldMessenger.of(context).showSnackBar(
+    //     //   SnackBar(
+    //     //     content: SuccessSnackBar(message: "Profile updated successfully!"),
+    //     //     duration: Duration(seconds: 2),
+    //     //     behavior: SnackBarBehavior.floating,
+    //     //     backgroundColor: Colors.transparent,
+    //     //     elevation: 0,
+    //     //   ),
+    //     // );
+    //   } catch (error) {
+    //     print('Error updating employee: $error');
+    //     // ScaffoldMessenger.of(context).showSnackBar(
+    //     //          SnackBar(
+    //     //     content: FailSnackBar(message: "Failed to update profile, please try again"),
+    //     //     duration: Duration(seconds: 2),
+    //     //     behavior: SnackBarBehavior.floating,
+    //     //     backgroundColor: Colors.transparent,
+    //     //     elevation: 0,
+    //     //   ),
+    //     // ); 
+    //   }
+    // }
   }

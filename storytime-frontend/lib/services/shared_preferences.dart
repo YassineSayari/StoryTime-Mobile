@@ -69,6 +69,7 @@ class SharedPrefs {
     prefs.remove(userFullNameKey);
     prefs.remove(userEmailKey);
     prefs.remove(userRoleKey);
+    prefs.remove(authTokenKey);
     prefs.remove(userImage);
   }
 

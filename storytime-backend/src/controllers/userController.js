@@ -6,6 +6,12 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 //const ForgetPassword = require("../models/forgotPassword");
 
+
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
+
+
 require("dotenv/config");
 
 const nodemailer = require("nodemailer");
@@ -116,6 +122,91 @@ module.exports.login = async function(req, res, next) {
         return res.status(500).json({ message: "problem in bycript" });
     }
 };
+
+module.exports.checkGoogleAuth = async function(req, res, next) {
+    try {
+        let fetchedUser = await User.findOne({ email: req.body.email }).populate(
+            "roles"
+        );
+        if (!fetchedUser) {
+            return res.status(404).json({ message: "Wrong Email USER DOES NOT EXIST§§§§§§§§§" });
+        }
+
+        if (!fetchedUser.isEnabled) {
+            return res.status(500).json({
+                message: "Unauthorised login. Waiting for register confirmation ",
+            });
+        }
+        
+        const token = jwt.sign({
+                email: fetchedUser.email,
+                id: fetchedUser._id,
+            },
+            "secret_this_should_be_longer", { expiresIn: "24h" }
+        );
+        return res.status(200).json({
+            token: token,
+            expiresIn: "24h",
+            fullName: fetchedUser.fullName,
+            image: fetchedUser.image,
+            id: fetchedUser._id,
+            roles: fetchedUser.roles,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "problem in bycript" });
+    }
+};
+
+
+
+//GOOGLE AUTH
+
+
+// passport.use(
+//   new GoogleStrategy(
+//     {
+//       clientID: process.env.GOOGLE_CLIENT_ID,
+//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//       callbackURL: 'http://localhost:3002/auth/google/callback',
+//     },
+//     async (accessToken, refreshToken, profile, done) => {
+//       try {
+//         // Find or create the user based on the Google profile
+//         let existingUser = await User.findOne({ googleId: profile.id });
+//         if (existingUser) {
+//           return done(null, existingUser);
+//         }
+
+//         const newUser = new User({
+//           googleId: profile.id,
+//           fullName: profile.displayName,
+//           email: profile.emails[0].value,
+//           image: profile.photos[0].value,
+//           // Add other fields as necessary
+//         });
+
+//         await newUser.save();
+//         done(null, newUser);
+//       } catch (err) {
+//         done(err, false);
+//       }
+//     }
+//   )
+// );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports.checkPassword = async function(req, res, next) {
     try {
         let fetchedUser = await User.findById(req.body.id);
@@ -129,34 +220,6 @@ module.exports.checkPassword = async function(req, res, next) {
     } catch (error) {
         return res.status(500).json({ message: "problem in bycript" });
     }
-};
-
-module.exports.updateUserRoles = async function(req, res) {
-    const ID = req.params.id;
-    if (!ObjectId.isValid(ID)) {
-        return res.status(404).json("ID is not valid");
-    }
-    const body = {...req.body };
-    console.log(body);
-    var userRoles = [];
-
-    body.roles.forEach((role) => {
-        if (role == "Engineer") {
-            userRoles.push(Roles.Engineer);
-        }
-        if (role == "Client") {
-            userRoles.push(Roles.Client);
-        }
-        if (role == "Team Leader") {
-            userRoles.push(Roles.TeamLeader);
-        }
-    });
-    console.log(userRoles);
-    User.findByIdAndUpdate(ID, { $set: { roles: userRoles } })
-        .then(() => {
-            res.status(200).json("roles updates");
-        })
-        .catch((error) => res.status(500).json(error));
 };
 
 module.exports.UpdateUser = async function(req, res, next) {
@@ -217,7 +280,7 @@ module.exports.forgotPassword = async function(req, res, next) {
         transporter.sendMail({
             from: process.env.EMAIL,
             to: user.email,
-            subject: "Prologic -- Verification code for changing password",
+            subject: "StoryTime -- Verification code for changing password",
             text: "This is your verification code for changing password : " + code,
         });
 

@@ -18,12 +18,12 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['_id'],
-      fullName: json['fullName'],
-      email: json['email'],
+      id: json['_id']?? '',
+      fullName: json['fullName']?? '',
+      email: json['email']?? '',
       roles: List<String>.from(json['roles']),
       image: json['image'],
-      gender: json['gender'],
+      gender: json['gender']?? '',
       isEnabled: json['isEnabled'],
     );
   }

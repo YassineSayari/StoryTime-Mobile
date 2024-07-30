@@ -31,6 +31,23 @@ class AuthService {
     }
   }
 
+    Future<Map<String, dynamic>> checkGoogleAuth(String? email) async {
+    print("checking for user");
+    final response = await http.post(
+      Uri.parse('$apiUrl/checkGoogleAuth'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    if (response.statusCode == 200) {
+      print("found a user");
+      Map<String, dynamic> data = json.decode(response.body);
+      return data;
+    } else {
+      print("no user found");
+      return {'error': 'Incorrect email '};
+    }
+  }
 
 
   Future<void> SignUp( Map<String, dynamic> data  

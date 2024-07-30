@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,16 @@ import 'languages/language_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  print('-- WidgetsFlutterBinding.ensureInitialized');
+
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: 'AIzaSyDRjcOG-UtA5pPXXMqm1zz6mtLqU3IXlaM',
+      appId: '1:82081837207:android:9dda6b3d277c2a99bcb9d2',
+      messagingSenderId: '82081837207',
+      projectId: 'story-time-f39d7',
+    ),
+  );
   runApp(
     MultiProvider(
       providers: [
